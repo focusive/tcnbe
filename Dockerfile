@@ -6,7 +6,7 @@ COPY . .
 ENV CGO_ENABLED=0
 
 RUN go build \
-    -ldflags "-X main.githash=$(git rev-parse HEAD) -X main.buildstamp=$(date +%Y%m%d.%H%M%S)" \
+    -ldflags "-X main.buildcommit=$(git rev-parse HEAD) -X main.buildtime=$(date +%Y%m%d.%H%M%S)" \
     -tags timetzdata \
     -o goapp \
     main.go

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"log"
@@ -17,6 +18,11 @@ import (
 
 	klog "gitdev.inno.ktb/coach/thaichanabe/log"
 	"gitdev.inno.ktb/coach/thaichanabe/place"
+)
+
+var (
+	buildcommit = "development"
+	buildtime   = time.Now().Format(time.RFC3339)
 )
 
 func main() {
@@ -65,9 +71,15 @@ func main() {
 	r := mux.NewRouter()
 	r.Use(klog.Middleware(logger))
 
+	r.Handle("/ok", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		json.NewEncoder(w).Encode(map[string]string{
+			"commit":    buildcommit,
+			"timestamp": buildtime,
+		})
+	}))
 	r.Handle("/checkin", place.CheckInHandler(db, client))
-	r.HandleFunc("/places", place.Handler(db))
-	r.HandleFunc("/checkout", place.CheckOutHandler(db))
+	r.Handle("/places", place.Handler(db))
+	r.Handle("/checkout", place.CheckOutHandler(db))
 
 	srv := &http.Server{
 		Handler: r,
