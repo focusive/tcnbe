@@ -25,7 +25,7 @@ func main() {
 	pflag.Parse()
 	viper.BindPFlags(pflag.CommandLine)
 
-	viper.SetDefault("port", "8080")
+	viper.SetDefault("app.port", "8080")
 	viper.SetDefault("db.conn", "root:my-secret-pw@/thaichana?charset=utf8&parseTime=True&loc=Local")
 
 	viper.SetConfigName("config")         // name of config file (without extension)
@@ -71,7 +71,7 @@ func main() {
 
 	srv := &http.Server{
 		Handler: r,
-		Addr:    fmt.Sprintf("127.0.0.1:%s", viper.GetString("port")),
+		Addr:    fmt.Sprintf("127.0.0.1:%s", viper.GetString("app.port")),
 		// Good practice: enforce timeouts for servers you create!
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
