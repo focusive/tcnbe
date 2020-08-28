@@ -39,7 +39,7 @@ func main() {
 	}
 
 	viper.AutomaticEnv()
-	viper.SetEnvKeyReplacer(strings.NewReplacer("_", "."))
+	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 
 	db, err := gorm.Open("mysql", viper.GetString("db.conn"))
 	if err != nil {
