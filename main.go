@@ -31,8 +31,8 @@ func main() {
 	pflag.Parse()
 	viper.BindPFlags(pflag.CommandLine)
 
-	viper.SetDefault("app.port", "8080")
-	viper.SetDefault("db.conn", "root:my-secret-pw@/thaichana?charset=utf8&parseTime=True&loc=Local")
+	viper.SetDefault("app.port", "8000")
+	viper.SetDefault("db.conn", "ktb@ktbserver:Passw0rd@tcp(ktbserver.mysql.database.azure.com)/thaichana?charset=utf8&parseTime=True&loc=Local")
 
 	viper.SetConfigName("config")         // name of config file (without extension)
 	viper.SetConfigType("yaml")           // REQUIRED if the config file does not have the extension in the name
@@ -77,9 +77,9 @@ func main() {
 			"timestamp": buildtime,
 		})
 	}))
-	r.Handle("/checkin", place.CheckInHandler(db, client))
-	r.Handle("/places", place.Handler(db))
-	r.Handle("/checkout", place.CheckOutHandler(db))
+	r.Handle("/checkin", place.CheckInHandler(db, client)).Methods(http.MethodPost)
+	r.Handle("/places", place.Handler(db)).Methods(http.MethodPost)
+	r.Handle("/checkout", place.CheckOutHandler(db)).Methods(http.MethodPost)
 
 	srv := &http.Server{
 		Handler: r,
