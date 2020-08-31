@@ -83,7 +83,7 @@ func main() {
 
 	srv := &http.Server{
 		Handler: r,
-		Addr:    fmt.Sprintf("127.0.0.1:%s", viper.GetString("app.port")),
+		Addr:    fmt.Sprintf("0.0.0.0:%s", viper.GetString("app.port")),
 		// Good practice: enforce timeouts for servers you create!
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
