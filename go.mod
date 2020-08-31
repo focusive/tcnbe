@@ -8,4 +8,8 @@ require (
 	github.com/pkg/errors v0.8.1
 	github.com/spf13/viper v1.7.1
 	go.uber.org/zap v1.15.0
+	go.opentelemetry.io/contrib/instrumentation/net/http v0.11.0
+	go.opentelemetry.io/otel v0.11.0
+	go.opentelemetry.io/otel/exporters/stdout v0.11.0
+	go.opentelemetry.io/otel/sdk v0.11.0
 )

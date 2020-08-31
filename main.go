@@ -17,6 +17,11 @@ import (
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
 
+	muxtrace "go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux"
+	otelglobal "go.opentelemetry.io/otel/api/global"
+	"go.opentelemetry.io/otel/exporters/stdout"
+	sdktrace "go.opentelemetry.io/otel/sdk/trace"
+
 	klog "gitdev.inno.ktb/coach/thaichanabe/log"
 	"gitdev.inno.ktb/coach/thaichanabe/place"
 )
@@ -24,6 +29,8 @@ import (
 var (
 	buildcommit = "development"
 	buildtime   = time.Now().Format(time.RFC3339)
+
+	tracer = otelglobal.Tracer("mux-server")
 )
 
 func main() {
@@ -48,6 +55,8 @@ func main() {
 	viper.AutomaticEnv()
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 
+	initTracer()
+
 	db, err := gorm.Open("mysql", viper.GetString("db.conn"))
 	if err != nil {
 		log.Fatal(err)
@@ -71,6 +80,7 @@ func main() {
 
 	r := mux.NewRouter()
 	r.Use(klog.Middleware(logger))
+	r.Use(muxtrace.Middleware("my-server"))
 
 	r.Handle("/metrics", promhttp.Handler())
 	r.Handle("/ok", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -79,7 +89,7 @@ func main() {
 			"timestamp": buildtime,
 		})
 	}))
-	r.Handle("/checkin", place.CheckInHandler(db, client))
+	r.Handle("/checkin", otelhttp.NewHandler(place.CheckInHandler(db, client), "check-in"))
 	r.Handle("/places", place.Handler(db))
 	r.Handle("/checkout", place.CheckOutHandler(db))
 
@@ -92,4 +102,22 @@ func main() {
 	}
 
 	log.Fatal(srv.ListenAndServe())
+}
+
+func initTracer() {
+	exporter, err := stdout.NewExporter(stdout.WithPrettyPrint())
+	if err != nil {
+		log.Fatal(err)
+	}
+	cfg := sdktrace.Config{
+		DefaultSampler: sdktrace.AlwaysSample(),
+	}
+	tp, err := sdktrace.NewProvider(
+		sdktrace.WithConfig(cfg),
+		sdktrace.WithSyncer(exporter),
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
+	otelglobal.SetTraceProvider(tp)
 }
