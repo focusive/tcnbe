@@ -12,6 +12,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
@@ -71,6 +72,7 @@ func main() {
 	r := mux.NewRouter()
 	r.Use(klog.Middleware(logger))
 
+	r.Handle("/metrics", promhttp.Handler())
 	r.Handle("/ok", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(map[string]string{
 			"commit":    buildcommit,
