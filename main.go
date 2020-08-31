@@ -12,9 +12,15 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
+
+	muxtrace "go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux"
+	otelglobal "go.opentelemetry.io/otel/api/global"
+	"go.opentelemetry.io/otel/exporters/stdout"
+	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 
 	klog "gitdev.inno.ktb/coach/thaichanabe/log"
 	"gitdev.inno.ktb/coach/thaichanabe/place"
@@ -23,6 +29,8 @@ import (
 var (
 	buildcommit = "development"
 	buildtime   = time.Now().Format(time.RFC3339)
+
+	tracer = otelglobal.Tracer("mux-server")
 )
 
 func main() {
@@ -47,6 +55,8 @@ func main() {
 	viper.AutomaticEnv()
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 
+	initTracer()
+
 	db, err := gorm.Open("mysql", viper.GetString("db.conn"))
 	if err != nil {
 		log.Fatal(err)
@@ -70,7 +80,9 @@ func main() {
 
 	r := mux.NewRouter()
 	r.Use(klog.Middleware(logger))
+	r.Use(muxtrace.Middleware("my-server"))
 
+	r.Handle("/metrics", promhttp.Handler())
 	r.Handle("/ok", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(map[string]string{
 			"commit":    buildcommit,
@@ -90,4 +102,22 @@ func main() {
 	}
 
 	log.Fatal(srv.ListenAndServe())
+}
+
+func initTracer() {
+	exporter, err := stdout.NewExporter(stdout.WithPrettyPrint())
+	if err != nil {
+		log.Fatal(err)
+	}
+	cfg := sdktrace.Config{
+		DefaultSampler: sdktrace.AlwaysSample(),
+	}
+	tp, err := sdktrace.NewProvider(
+		sdktrace.WithConfig(cfg),
+		sdktrace.WithSyncer(exporter),
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
+	otelglobal.SetTraceProvider(tp)
 }
