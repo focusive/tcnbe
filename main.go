@@ -89,7 +89,7 @@ func main() {
 			"timestamp": buildtime,
 		})
 	}))
-	r.Handle("/checkin", otelhttp.NewHandler(place.CheckInHandler(db, client), "check-in"))
+	r.Handle("/checkin", place.CheckInHandler(db, client))
 	r.Handle("/places", place.Handler(db))
 	r.Handle("/checkout", place.CheckOutHandler(db))
 
