@@ -85,6 +85,7 @@ func main() {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Access-Control-Allow-Origin", "*")
 			w.Header().Set("Content-Type", "application/json; charset=utf-8")
+			w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
 			w.Header().Set("X-XSS-Protection", "1; mode=block")
 			w.Header().Set("X-Frame-Options", "DENY")
 			w.Header().Set("Strict-Transport-Security", "max-age=604800; includeSubDomains; preload")
@@ -99,9 +100,9 @@ func main() {
 			"timestamp": buildtime,
 		})
 	}))
-	r.Handle("/checkin", place.CheckInHandler(db, client)).Methods(http.MethodPost)
-	r.Handle("/places", place.Handler(db)).Methods(http.MethodPost)
-	r.Handle("/checkout", place.CheckOutHandler(db)).Methods(http.MethodPost)
+	r.Handle("/checkin", place.CheckInHandler(db, client)).Methods(http.MethodPost, http.MethodOptions)
+	r.Handle("/places", place.Handler(db)).Methods(http.MethodPost, http.MethodOptions)
+	r.Handle("/checkout", place.CheckOutHandler(db)).Methods(http.MethodPost, http.MethodOptions)
 
 	srv := &http.Server{
 		Handler: r,
