@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
@@ -92,6 +93,15 @@ func main() {
 	r.Handle("/checkin", place.CheckInHandler(db, client)).Methods(http.MethodPost)
 	r.Handle("/places", place.Handler(db)).Methods(http.MethodPost)
 	r.Handle("/checkout", place.CheckOutHandler(db)).Methods(http.MethodPost)
+
+	cors := handlers.CORS(
+		handlers.AllowedHeaders([]string{"content-type"}),
+		handlers.AllowedOrigins([]string{"*"}),
+		handlers.AllowedMethods([]string{"GET", "HEAD", "POST", "PUT", "OPTIONS"}),
+		handlers.AllowCredentials(),
+	)
+
+	r.Use(cors)
 
 	srv := &http.Server{
 		Handler: r,

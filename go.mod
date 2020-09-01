@@ -2,8 +2,8 @@ module gitdev.inno.ktb/coach/thaichanabe
 
 go 1.14
 
-
 require (
+	github.com/gorilla/handlers v1.5.0
 	github.com/gorilla/mux v1.8.0
 	github.com/jinzhu/gorm v1.9.16
 	github.com/pkg/errors v0.8.1
