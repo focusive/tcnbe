@@ -1,3 +1,5 @@
+db:
+	docker run --name some-mysql -p 3306:3306 -e MYSQL_ROOT_PASSWORD=my-secret-pw -d mysql
 newdb:
 	docker exec -i some-mysql sh -c 'exec mysql -uroot -p"my-secret-pw"' < "./initial.sql"
 migrate:
