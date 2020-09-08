@@ -37,3 +37,13 @@ Open file tests/checkin.md
 Short key: command + shift + p
 
 Select `Rest Client: Send Request`
+
+## Acceptance Testing with restcli
+
+### install rest-cli
+
+> npm install -g rest-cli
+
+### run
+
+> restcli tests/suite.http

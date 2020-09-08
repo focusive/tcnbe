@@ -6,3 +6,7 @@ migrate:
 	go run main.go --migrate
 run:
 	DB_CONN="ktb@ktbserver:Passw0rd@tcp(ktbserver.mysql.database.azure.com)/thaichana?charset=utf8&parseTime=True&loc=Local" go run main.go
+test:
+	go test -v ./...
+acceptance:
+	restcli tests/suite.http
